@@ -18,32 +18,39 @@
 	 * 
 	 * Due: 12/8 by 12PM
 	 */
-public class main {
+public class ThemePark {
 		
-		private final static Logger LOGGER = Logger.getLogger(main.class.getName());
+		private final static Logger LOGGER = Logger.getLogger(ThemePark.class.getName());
 		private final static String DB_DRIVER = "com.mysql.jdbc.Driver";
-	    private final static String DB_URL = "jdbc:mysql://infoserver.cecs.csulb.edu:3306/";
+	    private final static String DB_URL = "cecs-db01.coe.csulb.edu:3306";
 	    
 	    private Connection connection = null;
 	    Scanner managerInput = new Scanner(System.in);
 	    
+	    public static void main(String[] args) throws SQLException, ClassNotFoundException 
+	    {
+	    	LOGGER.setLevel(Level.INFO);
+	        ThemePark themePark = new ThemePark();
+	        themePark.connectToDatabase();
+	        if(themePark.isConnected())
+	        {
+	            themePark.mainMenu();
+	        }
+	        else
+	        {
+	            System.out.println("\nNo Connection!");
+	        }
+	    }
 	    
-	    public main() {
-	    	try
-	        {
-	            Class.forName(DB_DRIVER);
-	        }//end try
-	        catch(ClassNotFoundException e)
-	        {
-	            LOGGER.log(Level.SEVERE, "Loading JDBC driver failed. Reason: {0}", e);
-	            System.exit(1);
-	        }//end catch
+	    public ThemePark() throws ClassNotFoundException {
+	        Class.forName(DB_DRIVER);
+	        //LOGGER.log(Level.SEVERE, "Loading JDBC driver failed. Reason: {0}", e);
+	        System.exit(1);
 	    }
 	    
 	    
 	    public void connectToDatabase() {
-	    	 try
-	         {
+	    	 try {
 	             System.out.println("\nPlease enter username and password for CECS 323 database.");
 	             System.out.println("Username: ");
 	             String dbManager = managerInput.nextLine();
@@ -52,23 +59,25 @@ public class main {
 	             
 	             connection = DriverManager.getConnection(DB_URL, dbManager, dbPassword);
 	             connection.setAutoCommit(false);
-	         }//end try
+	         }
 	         catch(SQLException e)
 	         {
 	             LOGGER.log(Level.SEVERE, "Connection to database failed. Reason: ", e.getMessage());
 	             connection = null;
-	         }//end catch
+	         }
 	    }
 	    
 	    public void disconnectFromDatabase() {
-	    	try
-	        {
+	    	try {
 	            connection.close();
-	        }//end try
-	        catch(SQLException e)
-	        {
+	        }
+	        catch(SQLException e) {
 	            LOGGER.log(Level.SEVERE, "Disconnection failed. Reason: ", e.getMessage());
-	        }//end catch
+	        }
+	    }
+	    
+	    public boolean isConnected() {
+	        return connection != null;
 	    }
 	    
 	    public String displayMenu() {
