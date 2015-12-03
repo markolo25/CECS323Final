@@ -103,8 +103,8 @@ public class ThemePark {
 	    public String displayQueueryMenu() {
 			return( "Queuery Menu\n" +
 					"1. List information on Employees with the earliest birthday. " +
-					"2. List customers with the highest reward points" +
-					"3. " +
+					"2. List customers with the highest reward points." +
+					"3. List items of all the resturants having a price of more than 10." +
 					"0. Return to Main Menu");
 	    	
 	    }
