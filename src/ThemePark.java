@@ -16,49 +16,55 @@
 	 * @Class CECS 323
 	 * 		  Jenny Li Jiang
 	 * 
+	 * @username: cecs323j11
+	 * @passsword: Ehohwi - only use at home 
+	 * 
 	 * Due: 12/8 by 12PM
 	 */
 public class ThemePark {
 		
 		private final static Logger LOGGER = Logger.getLogger(ThemePark.class.getName());
 		private final static String DB_DRIVER = "com.mysql.jdbc.Driver";
-	    private final static String DB_URL = "cecs-db01.coe.csulb.edu:3306";
+	    private final static String DB_URL = "jdbc:mysql://cecs-db01.coe.csulb.edu:3306/cecs323j11";
 	    
 	    private Connection connection = null;
 	    Scanner managerInput = new Scanner(System.in);
 	    
-	    public static void main(String[] args) throws SQLException, ClassNotFoundException 
-	    {
+	    public static void main(String[] args) throws SQLException, ClassNotFoundException {
 	    	LOGGER.setLevel(Level.INFO);
 	        ThemePark themePark = new ThemePark();
 	        themePark.connectToDatabase();
-	        if(themePark.isConnected())
-	        {
+	        
+	        if(themePark.isConnected()) {
 	            themePark.mainMenu();
 	        }
-	        else
-	        {
-	            System.out.println("\nNo Connection!");
+	        else {
+	           System.out.println("\nNo Connection!");
 	        }
 	    }
 	    
-	    public ThemePark() throws ClassNotFoundException {
-	        Class.forName(DB_DRIVER);
-	        //LOGGER.log(Level.SEVERE, "Loading JDBC driver failed. Reason: {0}", e);
-	        System.exit(1);
+	    public ThemePark() {
+	    	try {	
+	    		Class.forName(DB_DRIVER);
+	    	}
+	    	catch(ClassNotFoundException e) {
+	    		LOGGER.log(Level.SEVERE, "Loading JDBC driver failed. Reason: {0}", e);
+	        	System.exit(1);
+	    	}
 	    }
 	    
 	    
 	    public void connectToDatabase() {
 	    	 try {
 	             System.out.println("\nPlease enter username and password for CECS 323 database.");
-	             System.out.println("Username: ");
+	             System.out.print("Username: ");
 	             String dbManager = managerInput.nextLine();
 	             System.out.print("Password: ");
-	             String dbPassword = managerInput.nextLine();
+	             String dbPassword = "";//managerInput.nextLine();
 	             
 	             connection = DriverManager.getConnection(DB_URL, dbManager, dbPassword);
-	             connection.setAutoCommit(false);
+	             System.out.println("eHAGBG");
+	             //connection.setAutoCommit(false);
 	         }
 	         catch(SQLException e)
 	         {
@@ -96,8 +102,8 @@ public class ThemePark {
 	    
 	    public String displayQueueryMenu() {
 			return( "Queuery Menu\n" +
-					"1. " +
-					"2. " +
+					"1. List information on Employees with the earliest birthday. " +
+					"2. List customers with the highest reward points" +
 					"3. " +
 					"0. Return to Main Menu");
 	    	
@@ -108,7 +114,7 @@ public class ThemePark {
 	    	Scanner menuScanner = new Scanner(System.in);
 	        int number;
 	        do {
-	        	displayMenu();
+	        	System.out.print(displayMenu());
 	            while (!menuScanner.hasNextInt()) {
 	                System.out.println("That's not a number!");
 	                menuScanner.next(); // this is important!
