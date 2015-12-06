@@ -44,7 +44,13 @@ public class ThemePark {
 			"WHERE c.c_id IN (SELECT c_id FROM Customer\n" +  				
 			"WHERE c_memberShipType = 'Veteran' || c_membershipType = 'Executive') && r.rp_points > 10000";
 	
-	private final static String LIST_RESTURANTS_PRICE_OVER_TEN = "";
+	private final static String LIST_RESTURANTS_FOOD_MAX_PRICE = 
+			"SELECT r.rest_name AS 'Resturant Name', r.rest_description AS 'Resturant Description', i.item_type AS 'Item Type', " +
+			"i.item_price AS 'Item Price', f.food_name AS 'Food Name', f.food_type AS 'Food Type'\n" +
+			"FROM Item i\n" +
+			"LEFT OUTER JOIN Resturant r ON r.rest_id = i.rest_id\n" +
+			"LEFT OUTER JOIN Food f on f.food_id = i.item_id\n" +
+			"HAVING i.item_price = (SELECT MAX(i.item_price) FROM Item i WHERE i.item_type = 'Food')";
 	
 	private final static String ADD_NEW_PERSON_QUERY = "INSERT INTO Person (per_id, per_fName, per_lName, per_dateOfBirth)\n"
 			+ "VALUES (?, ?, ?, ?)";
@@ -163,7 +169,7 @@ public class ThemePark {
 		return ("\nQueuery Menu\n" 
 				+ "1. List information on Employees with the earliest birthday.\n"
 				+ "2. List customers with the highest reward points.\n"
-				+ "3. List items of all the resturants having a price of more than 10.\n" 
+				+ "3. List the information of the Resturant, Item and Food with the maximum price.\n" 
 				+ "4. List the information of Attractions with the lowest age limit.\n"
 				+ "0. Return to Main Menu\n" 
 				+ "Please enter in a number (0 to return): ");
@@ -191,6 +197,7 @@ public class ThemePark {
 				listCustomerHighestReward();
 				break;
 			case 3:
+				listResturantFoodPriceMax();
 				break;
 			case 4:
 				break;
@@ -275,8 +282,31 @@ public class ThemePark {
 	         queryMenu();
 	}
 	
-	public void listResturantFoodPriceTen() throws SQLException {
-		
+	public void listResturantFoodPriceMax() throws SQLException {
+		PreparedStatement listResturantMaxFoodPriceQuery = 
+         		connection.prepareStatement(LIST_RESTURANTS_FOOD_MAX_PRICE);            
+         ResultSet results = listResturantMaxFoodPriceQuery.executeQuery();
+         System.out.print("\nResturant Name\t\t|Resturant Description\t\t|Item Type\t|Item Price\t|Food Name\t|Food Type\n");
+         System.out.println("-----------------------------------------"
+         		+ "---------------------------------------------------"
+         		+ "----------------------------------");
+         //Prints out query 
+         if(results.next())
+         {
+             do
+             {
+                 System.out.print(results.getString("Resturant Name") + "\t"
+                 + "|" + results.getString("Resturant Description") + "\t"
+                 + "|" + results.getString("Item Type") + "\t\t"
+                 + "|" + results.getInt("Item Price") + "\t\t"
+                 + "|" + results.getString("Food Name") + "\t\t"
+                 + "|" + results.getString("Food Type") + "\t"
+                 + "\n");
+                 
+             }while(results.next());
+         }
+         
+         queryMenu();
 	}
 
 	public void addNewCustomer() throws SQLException {
