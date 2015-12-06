@@ -24,20 +24,39 @@ public class ThemePark {
 	
 	
 	
-	private final static String LIST_EMPLOYEE_EARLY_BIRTHDAY = "";
+	private final static String LIST_EMPLOYEE_EARLY_BIRTHDAY = 
+			"SELECT p.per_id AS 'ID', p.per_fName AS 'First Name', per_lName AS 'Last Name', per_dateOfBirth AS 'Date of Birth',\n" +
+			"a.ad_address AS 'Address', a.ad_city AS 'City', a.ad_state AS 'State', a.ad_zip AS 'Zip', a.ad_type AS 'Address Type',\n" +
+			"ph.ph_number AS 'Phone Number', ph.ph_type AS 'Phone', e.emp_id AS 'Employee ID' , e.emp_jobTitle AS 'Job Title', e.emp_salary AS 'Salary'\n" +
+			"FROM Person p\n" +
+			"LEFT OUTER JOIN Address a ON p.per_id = a.ad_per_id\n" +
+			"LEFT OUTER JOIN Phone ph on p.per_id = ph.ph_per_id\n" +
+			"LEFT OUTER JOIN Employee e ON e.emp_per_id = p.per_id\n" +
+			"WHERE per_dateOfBirth = (SELECT MIN(per_dateOfBirth) From Person )";
 	
-	private final static String LIST_CUSTOMER_HIGEST_REWARD = "";
+	private final static String LIST_CUSTOMER_HIGEST_REWARD = 
+			"SELECT p.per_id AS 'ID Code', c.c_id AS 'Customer ID', c.c_userName AS 'User Name',\n"+	   
+			"p.per_fName AS 'First Name', p.per_lName AS 'Last Name', p.per_dateOfBirth AS 'Date of Birth',\n" +
+			"c.c_membershipType AS 'Membership Type', r.rp_points AS 'Reward points'\n" +
+			"FROM Person p\n" +
+			"INNER JOIN Customer c ON p.per_id = c.c_per_id\n" +
+			"LEFT OUTER JOIN RewardPoints r on c.c_id = r.rp_c_id\n" +
+			"WHERE c.c_id IN (SELECT c_id FROM Customer\n" +  				
+			"WHERE c_memberShipType = 'Veteran' || c_membershipType = 'Executive') && r.rp_points > 10000";
 	
 	private final static String LIST_RESTURANTS_PRICE_OVER_TEN = "";
 	
-	
+	private final static String ADD_NEW_PERSON_QUERY = "INSERT INTO Person (per_id, per_fName, per_lName, per_dateOfBirth)\n"
+			+ "VALUES (?, ?, ?, ?)";
+		
 
-	private final static String ADD_NEW_CUSTOMER_QUERY = "INSERT INTO Containers  (c_id, c_fName, c_lName, c_membershipType, c_reward, c_per_id) "
-			+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-	private final static String LIST_CUSTOMERS_QUERY = "SELECT * FROM Customers";
+	private final static String ADD_NEW_CUSTOMER_QUERY = "INSERT INTO Customer  (c_id, c_userName, c_membershipType, c_reward, c_per_id)\n"
+			+ "VALUES (?, ?, ?, ?, ?)";
 
-	private final static String REMOVE_CUSTOMER_QUERY = "DELETE FROM Customers " + "WHERE c_id = ?";
+	private final static String LIST_CUSTOMERS_QUERY = "SELECT * FROM Customer";
+
+	private final static String REMOVE_CUSTOMER_QUERY = "DELETE FROM Customer\n" + "WHERE c_id = ?";
 	
 	
 
@@ -69,9 +88,9 @@ public class ThemePark {
 		try {
 			System.out.println("\nPlease enter username and password for CECS 323 database.");
 			System.out.print("Username: ");
-			String dbManager = managerInput.nextLine();
+			String dbManager = "cecs323j11"; //managerInput.nextLine();
 			System.out.print("Password: ");
-			String dbPassword = "";// managerInput.nextLine();
+			String dbPassword = "Ehohwi";// managerInput.nextLine();
 
 			connection = DriverManager.getConnection(DB_URL, dbManager, dbPassword);
 			
@@ -95,17 +114,8 @@ public class ThemePark {
 
 	public String displayMenu() {
 
-		return ("\tMain Menu\n" + "1. Quereies\n" + "2. Add a new row\n" + "3. Remove a row\n" + "4. Commit Changes\n"
+		return ("\n\tMain Menu\n" + "1. Quereies\n" + "2. Add a new row\n" + "3. Remove a row\n" + "4. Commit Changes\n"
 				+ "5. Rollback Changes\n" + "0. Exit\n" + "Please enter in a number (0 to exit): ");
-
-	}
-
-	public String displayQueryMenu() {
-		return ("Queuery Menu\n" 
-				+ "1. List information on Employees with the earliest birthday. "
-				+ "2. List customers with the highest reward points."
-				+ "3. List items of all the resturants having a price of more than 10." 
-				+ "0. Return to Main Menu");
 
 	}
 
@@ -148,13 +158,25 @@ public class ThemePark {
 		} while (number <= 0);
 
 	}
+	
+	public String displayQueryMenu() {
+		return ("\nQueuery Menu\n" 
+				+ "1. List information on Employees with the earliest birthday.\n"
+				+ "2. List customers with the highest reward points.\n"
+				+ "3. List items of all the resturants having a price of more than 10.\n" 
+				+ "4. List the information of Attractions with the lowest age limit.\n"
+				+ "0. Return to Main Menu\n" 
+				+ "Please enter in a number (0 to return): ");
 
-	public void queryMenu() {
+	}
+
+
+	public void queryMenu() throws SQLException {
 
 		Scanner queueryScanner = new Scanner(System.in);
 		int number;
 		do {
-			System.out.println(displayQueryMenu());
+			System.out.print(displayQueryMenu());
 			while (!queueryScanner.hasNextInt()) {
 				System.out.println("That's not a number!");
 				queueryScanner.next(); // this is important!
@@ -163,12 +185,16 @@ public class ThemePark {
 
 			switch (number) {
 			case 1:
+				listEmployeeEarlyBirthday();
 				break;
 			case 2:
+				listCustomerHighestReward();
 				break;
 			case 3:
 				break;
-			case 0:
+			case 4:
+				break;
+			case 0: mainMenu();
 				break;
 			default:
 				System.out.println("\n Please enter in a number 1 - 3 or 0 to return to Main Menu...\n");
@@ -183,11 +209,70 @@ public class ThemePark {
 	//Querys
 	
 	public void listEmployeeEarlyBirthday() throws SQLException {
-		
+		 PreparedStatement listEmployeeEarlyBirthdayQuery = 
+         		connection.prepareStatement(LIST_EMPLOYEE_EARLY_BIRTHDAY);            
+         ResultSet results = listEmployeeEarlyBirthdayQuery.executeQuery();
+         System.out.print("\nID\t|First Name\t|Last Name\t|Date of Birth\t"
+         		+ "|Address\t|City\t\t|State\t|Zip\t|Address Type\t|Phone Number\t"
+         		+ "|Phone\t|Employee ID\t|Job Title\t|Salary\n");
+         System.out.println("---------------------------------------------"
+         		+ "-----------------------------------------------------"
+         		+ "-----------------------------------------------------"
+         		+ "----------------------------------------------");
+         //Prints out query 
+         if(results.next())
+         {
+             do
+             {
+                 System.out.print(results.getInt("ID") + "\t"
+                 + "|" + results.getString("First Name") + "\t"
+                 + "|" + results.getString("Last Name") + "\t\t"
+                 + "|" + results.getDate("Date of Birth") + "\t"
+                 + "|" + results.getString("Address") + "\t"
+                 + "|" + results.getString("City") + "\t"
+                 + "|" + results.getString("State") + "\t"
+                 + "|" + results.getInt("Zip") + "\t"
+                 + "|" + results.getString("Address Type") + "\t\t"
+                 + "|" + results.getString("Phone Number") + "\t"
+                 + "|" + results.getString("Phone") + "\t"
+                 + "|" + results.getInt("Employee ID") + "\t\t"
+                 + "|" + results.getString("Job Title") + "\t\t"
+                 + "|" + results.getDouble("Salary") + "\t\t"
+                 + "\n");
+                 
+             }while(results.next());
+         }
+         
+         queryMenu();
 	}
 	
 	public void listCustomerHighestReward() throws SQLException {
-		
+		 PreparedStatement listCustomerHighestRewardQuery = 
+	         		connection.prepareStatement(LIST_CUSTOMER_HIGEST_REWARD);            
+	         ResultSet results = listCustomerHighestRewardQuery.executeQuery();
+	         System.out.print("\nID\t|Customer ID\t|User Name\t|First Name\t|LastName\t|Date of Birth\t|Membership Type\t|Reward Points\n");
+	         System.out.println("-----------------------------------------"
+	         		+ "---------------------------------------------------"
+	         		+ "----------------------------------");
+	         //Prints out query 
+	         if(results.next())
+	         {
+	             do
+	             {
+	                 System.out.print(results.getString("ID Code") + "\t"
+	                 + "|" + results.getInt("Customer ID") + "\t\t"
+	                 + "|" + results.getString("User Name") + "\t"
+	                 + "|" + results.getString("First Name") + "\t\t"
+	                 + "|" + results.getString("Last Name") + "\t\t"
+	                 + "|" + results.getDate("Date of Birth") + "\t"
+	                 + "|" + results.getString("MemberShip Type") + "\t\t"
+	                 + "|" + results.getInt("Reward Points") + "\t\t"
+	                 + "\n");
+	                 
+	             }while(results.next());
+	         }
+	         
+	         queryMenu();
 	}
 	
 	public void listResturantFoodPriceTen() throws SQLException {
@@ -196,6 +281,8 @@ public class ThemePark {
 
 	public void addNewCustomer() throws SQLException {
 
+		PreparedStatement addNewPerson = connection.prepareStatement(ADD_NEW_PERSON_QUERY);
+		
 		PreparedStatement addNewCustomer = connection.prepareStatement(ADD_NEW_CUSTOMER_QUERY);
 
 		PreparedStatement listContractsQuery = connection.prepareStatement(LIST_CUSTOMERS_QUERY);
@@ -203,28 +290,35 @@ public class ThemePark {
 		ResultSet customerResults = listContractsQuery.executeQuery();
 
 		boolean valid = false;
-
+		
 		System.out.print("Enter Customer ID: ");
 		int c_id = Integer.parseInt(managerInput.nextLine());
+		
 
 		if (customerResults.next()) {
 
 			do {
 				if (c_id == customerResults.getInt("c_id")) {
-					System.out.println(
-							"Customer already exists in database...\n" + "Please Enter in a new Customer ID: ");
-					c_id = Integer.parseInt(managerInput.nextLine());
-					valid = true;
+					System.out.print(
+							"Customer already exists in database...\n");
+							addNewCustomer();
 				}
+		
 
-			} while (!valid);
+			} while (customerResults.next());
 		}
-
+		
 		System.out.print("\nEnter Customer's First Name: ");
-		String c_fName = managerInput.nextLine();
-
+		String per_fName = managerInput.nextLine();
+		
 		System.out.print("\nEnter Customer's Last Name: ");
-		String c_lName = managerInput.nextLine();
+		String per_lName = managerInput.nextLine();
+		
+		System.out.print("\nEnter Customer's Date of Birth(yyyy-mm-dd): ");
+		String per_dateOfBirth = managerInput.nextLine();
+
+		System.out.print("\nEnter Customer's User Name: ");
+		String c_userName = managerInput.nextLine();
 
 		System.out.print("\nEnter Customer's Membership Type: ");
 		String c_membershipType = managerInput.nextLine();
@@ -234,13 +328,21 @@ public class ThemePark {
 
 		System.out.print("\nEnter Customer's ID Code: ");
 		int c_per_id = Integer.parseInt(managerInput.nextLine());
+		
+		System.out.println(c_per_id);
+		
+		addNewPerson.setInt(1, c_per_id);
+		addNewPerson.setString(2, per_lName);
+		addNewPerson.setString(3, per_fName);
+		addNewPerson.setString(4, per_dateOfBirth);
+		addNewPerson.executeUpdate();
 
 		addNewCustomer.setInt(1, c_id);
-		addNewCustomer.setString(2, c_fName);
-		addNewCustomer.setString(3, c_lName);
-		addNewCustomer.setString(4, c_membershipType);
-		addNewCustomer.setString(5, c_reward);
-		addNewCustomer.setInt(6, c_per_id);
+		addNewCustomer.setString(2, c_userName);
+		addNewCustomer.setString(3, c_membershipType);
+		addNewCustomer.setString(4, c_reward);
+		addNewCustomer.setInt(5, c_per_id);
+		addNewCustomer.executeUpdate();
 
 		System.out.println("Successfully added a new Customer...\n" + " Would you like to add another Customer? (y/n)");
 		if (managerInput.nextLine().equals("y")) {
