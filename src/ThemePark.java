@@ -62,7 +62,7 @@ public class ThemePark {
 
 	private final static String LIST_CUSTOMERS_QUERY = "SELECT * FROM Customer";
 
-	private final static String REMOVE_CUSTOMER_QUERY = "DELETE FROM Customer\n" + "WHERE c_id = ?";
+	private final static String REMOVE_CUSTOMER_QUERY = "DELETE FROM Person\n" + "WHERE per_id = ?";
 	
 	
 
@@ -72,6 +72,7 @@ public class ThemePark {
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
 		LOGGER.setLevel(Level.INFO);
 		ThemePark themePark = new ThemePark();
+		
 		themePark.connectToDatabase();
 
 		if (themePark.isConnected()) {
@@ -96,9 +97,10 @@ public class ThemePark {
 			System.out.print("Username: ");
 			String dbManager = "cecs323j11"; //managerInput.nextLine();
 			System.out.print("Password: ");
-			String dbPassword = "Ehohwi";// managerInput.nextLine();
+			String dbPassword = "";// managerInput.nextLine();
 
 			connection = DriverManager.getConnection(DB_URL, dbManager, dbPassword);
+			connection.setAutoCommit(false);
 			
 		} catch (SQLException e) {
 			LOGGER.log(Level.SEVERE, "Connection to database failed. Reason: {0} ", e.getMessage());
@@ -153,7 +155,7 @@ public class ThemePark {
 			case 5:
 				rollback();
 				break;
-			case 0:
+			case 0: System.exit(0);
 				break;
 			default:
 				System.out.println("\n Please enter in a number 1 - 5 or 0 to exit...\n");
@@ -395,12 +397,14 @@ public class ThemePark {
 			System.out.println("\nThere are no Customers in this query." + "Returning to the Main Menu.");
 			mainMenu();
 		} else {
-			System.out.println("\nID\t\tFirst Name\tLast Name\tMembership\tRewards\tID Code\n");
+			System.out.print("\nID\t|User Name\t|Membership\t|Rewards\n");
+			System.out.println("-----------------------------------------"
+	         		+ "-------------------------");
 			do {
-				System.out.print(customerResults.getString("c_id") + "\t\t\t" + customerResults.getString("c_fName")
-						+ "\t\t\t" + customerResults.getString("c_lName") + "\t"
-						+ customerResults.getString("c_membershipType") + "\t\t\t"
-						+ customerResults.getString("c_reward") + "\n");
+				System.out.print(customerResults.getString("c_per_id") + "\t"
+						+ "|" + customerResults.getString("c_userName") + "\t"
+						+ "|" + customerResults.getString("c_membershipType") + " \t"
+						+ "|" + customerResults.getString("c_reward") + "\n");
 
 			} while (customerResults.next());
 		}
@@ -418,11 +422,14 @@ public class ThemePark {
 				System.out.println("Unable to find Customer, please enter in a new ID...");
 			}
 
-		} while (removeCustomerQuery.executeUpdate() == 0);
+		} while (removeCustomerQuery.executeUpdate() != 0);
 
 		System.out.println("Successfully removed a Customer.\n" + "Would you like to remove another Customer? (y/n)");
 		if (managerInput.nextLine().equals("y")) {
 			removeCustomer();
+		}
+		else {
+			mainMenu();
 		}
 
 	}
