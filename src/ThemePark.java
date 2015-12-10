@@ -23,7 +23,7 @@ public class ThemePark {
 	private final static String DB_URL = "jdbc:mysql://cecs-db01.coe.csulb.edu:3306/cecs323j11";
 	
 	
-	
+	//Lists the employees with the earliest birthday
 	private final static String LIST_EMPLOYEE_EARLY_BIRTHDAY = 
 			"SELECT p.per_id AS 'ID', p.per_fName AS 'First Name', per_lName AS 'Last Name', per_dateOfBirth AS 'Date of Birth',\n" +
 			"a.ad_address AS 'Address', a.ad_city AS 'City', a.ad_state AS 'State', a.ad_zip AS 'Zip', a.ad_type AS 'Address Type',\n" +
@@ -34,6 +34,7 @@ public class ThemePark {
 			"LEFT OUTER JOIN Employee e ON e.emp_per_id = p.per_id\n" +
 			"WHERE per_dateOfBirth = (SELECT MIN(per_dateOfBirth) From Person )";
 	
+	//lists the cusatomer with the highest rewards points that are executive or veteran members
 	private final static String LIST_CUSTOMER_HIGEST_REWARD = 
 			"SELECT p.per_id AS 'ID Code', c.c_id AS 'Customer ID', c.c_userName AS 'User Name',\n"+	   
 			"p.per_fName AS 'First Name', p.per_lName AS 'Last Name', p.per_dateOfBirth AS 'Date of Birth',\n" +
@@ -44,6 +45,7 @@ public class ThemePark {
 			"WHERE c.c_id IN (SELECT c_id FROM Customer\n" +  				
 			"WHERE c_memberShipType = 'Veteran' || c_membershipType = 'Executive') && r.rp_points > 10000";
 	
+	//lists the items descriptions of food items with the highest price
 	private final static String LIST_RESTURANTS_FOOD_MAX_PRICE = 
 			"SELECT r.rest_name AS 'Resturant Name', r.rest_description AS 'Resturant Description', i.item_type AS 'Item Type', " +
 			"i.item_price AS 'Item Price', f.food_name AS 'Food Name', f.food_type AS 'Food Type'\n" +
@@ -52,28 +54,30 @@ public class ThemePark {
 			"LEFT OUTER JOIN Food f on f.food_id = i.item_id\n" +
 			"HAVING i.item_price = (SELECT MAX(i.item_price) FROM Item i WHERE i.item_type = 'Food')";
 	
+	//Query to add a new person 
 	private final static String ADD_NEW_PERSON_QUERY = "INSERT INTO Person (per_id, per_fName, per_lName, per_dateOfBirth)\n"
 			+ "VALUES (?, ?, ?, ?)";
 		
-
-
+	//Query to add a new customer
 	private final static String ADD_NEW_CUSTOMER_QUERY = "INSERT INTO Customer  (c_id, c_userName, c_membershipType, c_reward, c_per_id)\n"
 			+ "VALUES (?, ?, ?, ?, ?)";
 
+	//Query to list all the customers
 	private final static String LIST_CUSTOMERS_QUERY = "SELECT * FROM Customer";
 
+	//Query to delete a person/customer
 	private final static String REMOVE_CUSTOMER_QUERY = "DELETE FROM Person\n" + "WHERE per_id = ?";
 	
-	
-
+	//Initialize connection and input scanner
 	private Connection connection = null;
 	Scanner managerInput = new Scanner(System.in);
 
+	//Main Method
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
 		LOGGER.setLevel(Level.INFO);
-		ThemePark themePark = new ThemePark();
+		ThemePark themePark = new ThemePark(); //Create Theme Park
 		
-		themePark.connectToDatabase();
+		themePark.connectToDatabase(); //connect to the database
 
 		if (themePark.isConnected()) {
 			themePark.mainMenu();
@@ -82,6 +86,7 @@ public class ThemePark {
 		}
 	}
 
+	//Default Constructor
 	public ThemePark() {
 		try {
 			Class.forName(DB_DRIVER);
@@ -91,13 +96,14 @@ public class ThemePark {
 		}
 	}
 
+	//Connect to database
 	public void connectToDatabase() {
 		try {
 			System.out.println("\nPlease enter username and password for CECS 323 database.");
 			System.out.print("Username: ");
-			String dbManager = "cecs323j11"; //managerInput.nextLine();
+			String dbManager = managerInput.nextLine();
 			System.out.print("Password: ");
-			String dbPassword = "";// managerInput.nextLine();
+			String dbPassword = managerInput.nextLine();
 
 			connection = DriverManager.getConnection(DB_URL, dbManager, dbPassword);
 			connection.setAutoCommit(false);
@@ -108,6 +114,7 @@ public class ThemePark {
 		}
 	}
 
+	//Disconnect from database
 	public void disconnectFromDatabase() {
 		try {
 			connection.close();
@@ -116,10 +123,12 @@ public class ThemePark {
 		}
 	}
 
+	//Check if connected
 	public boolean isConnected() {
 		return connection != null;
 	}
 
+	//Display main menu
 	public String displayMenu() {
 
 		return ("\n\tMain Menu\n" + "1. Quereies\n" + "2. Add a new row\n" + "3. Remove a row\n" + "4. Commit Changes\n"
@@ -127,6 +136,7 @@ public class ThemePark {
 
 	}
 
+	//Main Menu
 	public void mainMenu() throws SQLException {
 
 		Scanner menuScanner = new Scanner(System.in);
@@ -155,7 +165,7 @@ public class ThemePark {
 			case 5:
 				rollback();
 				break;
-			case 0: System.exit(0);
+			case 0: exit();
 				break;
 			default:
 				System.out.println("\n Please enter in a number 1 - 5 or 0 to exit...\n");
@@ -167,18 +177,18 @@ public class ThemePark {
 
 	}
 	
+	//Display sub menu
 	public String displayQueryMenu() {
 		return ("\nQueuery Menu\n" 
 				+ "1. List information on Employees with the earliest birthday.\n"
 				+ "2. List customers with the highest reward points.\n"
 				+ "3. List the information of the Resturant, Item and Food with the maximum price.\n" 
-				+ "4. List the information of Attractions with the lowest age limit.\n"
 				+ "0. Return to Main Menu\n" 
 				+ "Please enter in a number (0 to return): ");
 
 	}
 
-
+	//Sub menu
 	public void queryMenu() throws SQLException {
 
 		Scanner queueryScanner = new Scanner(System.in);
@@ -200,8 +210,6 @@ public class ThemePark {
 				break;
 			case 3:
 				listResturantFoodPriceMax();
-				break;
-			case 4:
 				break;
 			case 0: mainMenu();
 				break;
@@ -311,6 +319,7 @@ public class ThemePark {
          queryMenu();
 	}
 
+	//Adds a new customer
 	public void addNewCustomer() throws SQLException {
 
 		PreparedStatement addNewPerson = connection.prepareStatement(ADD_NEW_PERSON_QUERY);
@@ -383,6 +392,7 @@ public class ThemePark {
 
 	}
 
+	//Removes a selected customer
 	public void removeCustomer() throws SQLException {
 
 		PreparedStatement listCustomersQuery = connection.prepareStatement(LIST_CUSTOMERS_QUERY);
@@ -434,12 +444,38 @@ public class ThemePark {
 
 	}
 
+	//Commit changes
 	public void commit() throws SQLException {
 		connection.commit();
 	}
 
+	//Rollback changes
 	public void rollback() throws SQLException {
 		connection.rollback();
 
+	}
+	
+	public void exit() throws SQLException {
+
+    	System.out.println("Are you sure you want to exit? (y/n)");
+
+    	if(managerInput.nextLine().equals("yes")) {
+    		System.out.println("Would you like your changes committed? (yes/no)");
+    		if(managerInput.nextLine().equals("yes")) {
+    			connection.commit();
+    			System.out.println("Your changes has been committed");
+        		System.exit(1);
+        	}
+    		else {
+    			connection.rollback();
+    			System.out.println("Your work has been rolled back!");
+    			System.out.println("Thank you for using Group 5's JDBC API!");
+        		System.exit(1);
+    		}
+    	}
+    	else {
+    		System.out.println("Returning to the Main Menu...");
+    		mainMenu();
+    	}
 	}
 }
