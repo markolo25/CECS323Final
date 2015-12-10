@@ -267,7 +267,7 @@ public class ThemePark {
 	}
 	
 	public void listCustomerHighestReward() throws SQLException {
-		 PreparedStatement listCustomerHighestRewardQuery = 
+		 	PreparedStatement listCustomerHighestRewardQuery = 
 	         		connection.prepareStatement(LIST_CUSTOMER_HIGEST_REWARD);            
 	         ResultSet results = listCustomerHighestRewardQuery.executeQuery();
 	         System.out.print("\nID\t|Customer ID\t|User Name\t|First Name\t|LastName\t|Date of Birth\t|Membership Type\t|Reward Points\n");
@@ -337,7 +337,6 @@ public class ThemePark {
 		
 		System.out.print("Enter Customer ID: ");
 		int c_id = Integer.parseInt(managerInput.nextLine());
-		
 
 		if (customerResults.next()) {
 
@@ -392,6 +391,8 @@ public class ThemePark {
 		if (managerInput.nextLine().equals("y")) {
 			addNewCustomer();
 		}
+		
+		mainMenu();
 
 	}
 
@@ -450,12 +451,13 @@ public class ThemePark {
 	//Commit changes
 	public void commit() throws SQLException {
 		connection.commit();
+		mainMenu();
 	}
 
 	//Rollback changes
 	public void rollback() throws SQLException {
 		connection.rollback();
-
+		mainMenu();
 	}
 	
 	public void exit() throws SQLException {
