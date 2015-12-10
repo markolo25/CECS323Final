@@ -463,7 +463,7 @@ public class ThemePark {
     	System.out.println("Are you sure you want to exit? (y/n)");
 
     	if(managerInput.nextLine().equals("y")) {
-    		System.out.println("Would you like your changes committed? (yes/no)");
+    		System.out.println("Would you like your changes committed? (y/n)");
     		if(managerInput.nextLine().equals("y")) {
     			connection.commit();
     			System.out.println("Your changes has been committed");
