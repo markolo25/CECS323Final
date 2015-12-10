@@ -5,7 +5,10 @@ import java.util.logging.*;
 
 /**
  * 
- * @Author Mark Mendoza Zachary Berg Daryl Blancaflor Romeo Garalde, Jr.
+ * @Author Mark Mendoza 
+ * Zachary Berg 
+ * Daryl Blancaflor 
+ * Romeo Garalde, Jr.
  * 
  * @Project Theme Park Disney AF
  * 
@@ -103,7 +106,7 @@ public class ThemePark {
 			System.out.print("Username: ");
 			String dbManager = managerInput.nextLine();
 			System.out.print("Password: ");
-			String dbPassword = managerInput.nextLine();
+			String dbPassword = ""; //managerInput.nextLine();
 
 			connection = DriverManager.getConnection(DB_URL, dbManager, dbPassword);
 			connection.setAutoCommit(false);
@@ -459,9 +462,9 @@ public class ThemePark {
 
     	System.out.println("Are you sure you want to exit? (y/n)");
 
-    	if(managerInput.nextLine().equals("yes")) {
+    	if(managerInput.nextLine().equals("y")) {
     		System.out.println("Would you like your changes committed? (yes/no)");
-    		if(managerInput.nextLine().equals("yes")) {
+    		if(managerInput.nextLine().equals("y")) {
     			connection.commit();
     			System.out.println("Your changes has been committed");
         		System.exit(1);
@@ -469,7 +472,6 @@ public class ThemePark {
     		else {
     			connection.rollback();
     			System.out.println("Your work has been rolled back!");
-    			System.out.println("Thank you for using Group 5's JDBC API!");
         		System.exit(1);
     		}
     	}
